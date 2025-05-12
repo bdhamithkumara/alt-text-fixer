@@ -291,16 +291,16 @@ class AltTextCodeActionProvider {
                     return fix;
                 };
 
-                // Quick fix: Use filename with extension (e.g., logo.png)
-                actions.push(createFix(issue.fileName, `Add alt="${issue.fileName}" (filename with extension)`));
+                // filename with extension (e.g., logo.png)
+                actions.push(createFix(issue.fileName, `Add alt="${issue.fileName}" `));
 
-                // Quick fix: Use filename without extension (e.g., logo)
-                actions.push(createFix(issue.baseName, `Add alt="${issue.baseName}" (filename without extension)`));
+                //  filename without extension (e.g., logo)
+                actions.push(createFix(issue.baseName, `Add alt="${issue.baseName}" `));
 
-                // Quick fix: Use filename without extension + "image" (e.g., logo image)
-                actions.push(createFix(`${issue.baseName} image`, `Add alt="${issue.baseName} image" (filename + image)`));
+                // filename without extension + "image" (e.g., logo image)
+                actions.push(createFix(`${issue.baseName} image`, `Add alt="${issue.baseName} image"`));
 
-                // Quick fix: Prompt for custom alt text
+                //  for custom alt text
                 const customFix = new vscode.CodeAction(
                     'Add custom alt text',
                     vscode.CodeActionKind.QuickFix

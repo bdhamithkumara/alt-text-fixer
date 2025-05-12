@@ -11,6 +11,19 @@ Check [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) for recommendatio
 
 ---
 
+## [0.0.2] - 2025-05-13
+
+### Added
+
+- Extension icon (`media/icon.png`) for display in the VS Code Marketplace and Extensions view.
+
+### Changed
+
+- Simplified quick fix labels by removing descriptive text "(filename with extension)", "(filename without extension)", and "(filename + image)" from options like `Add alt="filename.png"`, `Add alt="filename"`, and `Add alt="filename image"`.
+- Removed non-functional comments in `extension.js` to clean up the codebase.
+
+---
+
 ## [0.0.1] - 2025-05-13
 
 ### Added
@@ -18,9 +31,9 @@ Check [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) for recommendatio
 - Initial release of the **Alt Text Fixer** extension.
 - Support for detecting missing or empty `alt` attributes in `<img>`, `<Image>`, and `<v-img>` tags across **HTML**, **JSX**, **TSX**, **Vue**, **Svelte**, and **Astro** files.
 - Quick fixes for adding alt attributes:
-  - `alt="filename.png"` (filename with extension)
-  - `alt="filename"` (filename without extension)
-  - `alt="filename image"` (filename + "image")
+  - `Add alt="filename.png"` (filename with extension)
+  - `Add alt="filename"` (filename without extension)
+  - `Add alt="filename image"` (filename + "image")
   - Custom alt text with user input
 - Gutter bulb icon to highlight issues with missing or empty alt attributes.
 - Configuration option `altTextFixer.supportedTags` to customize tags to check.
