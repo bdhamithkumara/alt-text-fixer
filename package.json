@@ -7,6 +7,12 @@
     "name": "@bdhamithkumara",
     "email": "bdhamithkumara@gmail.com"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bdhamithkumara/alt-text-fixer"
+  },
+  "license": "MIT",
+  
   "engines": {
     "vscode": "^1.85.0"
   },
