@@ -29,7 +29,8 @@ function activate(ctx) {
         }
 
         const document = editor.document;
-        const supportedLanguages = ['html', 'javascriptreact', 'typescriptreact', 'vue', 'svelte', 'astro'];
+        const supportedLanguages = ['html', 'javascript', 'javascriptreact', 'typescriptreact', 'vue', 'svelte', 'astro'];
+        console.log(`Alt Text Fixer: Document languageId: ${document.languageId}`);
         if (!supportedLanguages.includes(document.languageId)) {
             vscode.window.showWarningMessage('This command only works for HTML, JSX, TSX, Vue, Svelte, or Astro files.');
             return;
@@ -51,7 +52,7 @@ function activate(ctx) {
     // Register code actions provider
     ctx.subscriptions.push(
         vscode.languages.registerCodeActionsProvider(
-            ['html', 'javascriptreact', 'typescriptreact', 'vue', 'svelte', 'astro'],
+            ['html', 'javascript', 'javascriptreact', 'typescriptreact', 'vue', 'svelte', 'astro'],
             new AltTextCodeActionProvider(),
             { providedCodeActionKinds: [vscode.CodeActionKind.QuickFix] }
         )
@@ -133,7 +134,7 @@ function parseVueTemplate(text) {
 function findMissingAltAttributes(text, document, languageId) {
     const issues = [];
     let lineNumber = 0;
-    const isJSX = languageId === 'javascriptreact' || languageId === 'typescriptreact';
+    const isJSX = languageId === 'javascript' || languageId === 'javascriptreact' || languageId === 'typescriptreact';
     const isVue = languageId === 'vue';
     const isSvelte = languageId === 'svelte';
     const isAstro = languageId === 'astro';
@@ -235,7 +236,7 @@ function showIssues(issues, document, editor, ctx) {
 
 // Update diagnostics on document change
 function updateDiagnostics(document, diagnosticCollection) {
-    const supportedLanguages = ['html', 'javascriptreact', 'typescriptreact', 'vue', 'svelte', 'astro'];
+    const supportedLanguages = ['html', 'javascript', 'javascriptreact', 'typescriptreact', 'vue', 'svelte', 'astro'];
     if (!supportedLanguages.includes(document.languageId)) return;
 
     const text = document.getText();
@@ -290,16 +291,16 @@ class AltTextCodeActionProvider {
                     return fix;
                 };
 
-                // filename with extension (logo.png)
-                actions.push(createFix(issue.fileName, `Add alt="${issue.fileName}" `));
+                // Quick fix: Use filename with extension (e.g., logo.png)
+                actions.push(createFix(issue.fileName, `Add alt="${issue.fileName}" (filename with extension)`));
 
-                // filename without extension (logo)
-                actions.push(createFix(issue.baseName, `Add alt="${issue.baseName}" `));
+                // Quick fix: Use filename without extension (e.g., logo)
+                actions.push(createFix(issue.baseName, `Add alt="${issue.baseName}" (filename without extension)`));
 
-                //filename without extension + "image" (logo image)
-                actions.push(createFix(`${issue.baseName} image`, `Add alt="${issue.baseName} image" `));
+                // Quick fix: Use filename without extension + "image" (e.g., logo image)
+                actions.push(createFix(`${issue.baseName} image`, `Add alt="${issue.baseName} image" (filename + image)`));
 
-                // for custom alt text
+                // Quick fix: Prompt for custom alt text
                 const customFix = new vscode.CodeAction(
                     'Add custom alt text',
                     vscode.CodeActionKind.QuickFix
@@ -314,6 +315,7 @@ class AltTextCodeActionProvider {
             }
         }
 
+        console.log(`Alt Text Fixer: Returning ${actions.length} code actions`);
         return actions;
     }
 }

@@ -9,6 +9,7 @@
   "categories": ["Other"],
   "activationEvents": [
     "onLanguage:html",
+    "onLanguage:javascript",
     "onLanguage:javascriptreact",
     "onLanguage:typescriptreact",
     "onLanguage:vue",
