@@ -9,25 +9,53 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents":  [
+    "onLanguage:html",
+    "onLanguage:javascriptreact",
+    "onLanguage:typescriptreact",
+    "onLanguage:vue",
+    "onLanguage:svelte",
+    "onLanguage:astro",
+    "onCommand:altTextFixer.scanFile"
+  ],
   "main": "./extension.js",
   "contributes": {
-    "commands": [{
-      "command": "alt-text-fixer.helloWorld",
-      "title": "Hello World"
-    }]
+    "commands": [
+      {
+        "command": "altTextFixer.scanFile",
+        "title": "Alt Text Fixer: Scan File for Missing Alt Attributes"
+      }
+    ],
+    "configuration": {
+      "title": "Alt Text Fixer",
+      "properties": {
+        "altTextFixer.supportedTags": {
+          "type": "array",
+          "default": ["img", "Image", "v-img"],
+          "description": "List of tags to check for alt attributes."
+        }
+      }
+    }
   },
   "scripts": {
     "lint": "eslint .",
     "pretest": "npm run lint",
-    "test": "vscode-test"
+    "test": "node ./test/runTest.js"
   },
   "devDependencies": {
     "@types/vscode": "^1.100.0",
+    "@types/glob": "^8.1.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "20.x",
+    "glob": "^8.1.0",
     "eslint": "^9.25.1",
+    "mocha": "^10.2.0",
+    "typescript": "^5.3.3",
     "@vscode/test-cli": "^0.0.10",
     "@vscode/test-electron": "^2.5.2"
+  },
+  "dependencies": {
+    "htmlparser2": "^9.1.0",
+    "vue-template-compiler": "^2.7.16"
   }
 }
