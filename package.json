@@ -4,12 +4,10 @@
   "description": "Detects missing or empty alt attributes in image tags across HTML and frontend frameworks (React, Next.js, Vue, Angular, Svelte, Astro, etc.).",
   "version": "0.0.1",
   "engines": {
-    "vscode": "^1.100.0"
+    "vscode": "^1.85.0"
   },
-  "categories": [
-    "Other"
-  ],
-  "activationEvents":  [
+  "categories": ["Other"],
+  "activationEvents": [
     "onLanguage:html",
     "onLanguage:javascriptreact",
     "onLanguage:typescriptreact",
@@ -43,16 +41,15 @@
     "test": "node ./test/runTest.js"
   },
   "devDependencies": {
-    "@types/vscode": "^1.100.0",
+    "@types/vscode": "^1.85.0",
     "@types/glob": "^8.1.0",
-    "@types/mocha": "^10.0.10",
+    "@types/mocha": "^10.0.1",
     "@types/node": "20.x",
+    "eslint": "^8.56.0",
     "glob": "^8.1.0",
-    "eslint": "^9.25.1",
     "mocha": "^10.2.0",
     "typescript": "^5.3.3",
-    "@vscode/test-cli": "^0.0.10",
-    "@vscode/test-electron": "^2.5.2"
+    "@vscode/test-electron": "^2.3.8"
   },
   "dependencies": {
     "htmlparser2": "^9.1.0",

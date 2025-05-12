@@ -1,0 +1,5 @@
+<div>
+  <img src="/photo.jpg">
+  <img src="/logo.png" alt="">
+  <img src="/banner.jpg" alt="Company banner">
+</div>
