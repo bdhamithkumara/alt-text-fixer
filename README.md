@@ -37,16 +37,20 @@ Open your file and run `Alt Text Fixer: Scan File` from the Command Palette.
 
 When a missing or empty `alt` attribute is detected, a bulb icon will appear in the gutter. Click the bulb or press `Ctrl+.` to see available options.
 
-- **Option 1**: Add `alt` with filename and extension  
+- **Option 1**: Add `alt` with filename and extension
+
   ![Option 1](https://i.ibb.co/YT7XHGdV/oprion1.gif)
 
 - **Option 2**: Add `alt` with filename only  
+
   ![Option 2](https://i.ibb.co/jkQCPYhY/option2.gif)
 
 - **Option 3**: Add `alt` with filename + "image"  
+
   ![Option 3](https://i.ibb.co/mV0qh9Hv/option3.gif)
 
 - **Option 4**: Add a custom alt text of your choice  
+
   ![Option 4](https://i.ibb.co/bj9DxJgs/option4.gif)
 
 ---
