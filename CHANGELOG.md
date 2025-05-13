@@ -11,6 +11,18 @@ Check [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) for recommendatio
 
 ---
 
+## [0.0.3] - 2025-05-13
+
+### Changed
+
+- Updated `README.md` to include a **"How It Works"** section with instructional GIFs showing:
+  - How to run the extension.
+  - How to choose quick fix options.
+- Added a **Support & Contributions** section encouraging users to star the repo and contribute.
+- Clarified features and usage instructions for better onboarding experience.
+
+---
+
 ## [0.0.2] - 2025-05-13
 
 ### Added

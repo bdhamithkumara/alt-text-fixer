@@ -26,30 +26,30 @@ Detects missing or empty alt attributes in image tags across HTML, React, Next.j
 
 ## 📖 How It Works
 
-### 🖥️ Step 1: Run the Extension  
+### 🖥️ Step 1 - Run the Extension  
 Open your file and run `Alt Text Fixer: Scan File` from the Command Palette.
 
 ![Run Extension](https://i.ibb.co/21X8XhHC/1.gif)
 
 ---
 
-### 💡 Step 2: Choose a Quick Fix Option
+### 💡 Step 2 - Choose a Quick Fix Option
 
 When a missing or empty `alt` attribute is detected, a bulb icon will appear in the gutter. Click the bulb or press `Ctrl+.` to see available options.
 
-- **Option 1**: Add `alt` with filename and extension
+- **Option 1** - Add `alt` with filename and extension
 
   ![Option 1](https://i.ibb.co/YT7XHGdV/oprion1.gif)
 
-- **Option 2**: Add `alt` with filename only  
+- **Option 2** - Add `alt` with filename only  
 
   ![Option 2](https://i.ibb.co/jkQCPYhY/option2.gif)
 
-- **Option 3**: Add `alt` with filename + "image"  
+- **Option 3** - Add `alt` with filename + "image"  
 
   ![Option 3](https://i.ibb.co/mV0qh9Hv/option3.gif)
 
-- **Option 4**: Add a custom alt text of your choice  
+- **Option 4** - Add a custom alt text of your choice  
 
   ![Option 4](https://i.ibb.co/bj9DxJgs/option4.gif)
 
@@ -71,7 +71,7 @@ If the scan command fails, add the following to your `settings.json`:
 
 ## 🌟 Support & Contributions
 
-If you find this extension helpful, please consider giving the repo a ⭐ on GitHub — it means a lot!
+If you find this extension helpful, please consider giving the repo a ⭐ on GitHub. it means a lot!
 
 All contributions are welcome!  
 Feel free to open issues, suggest features, or submit a pull request. Let’s make web accessibility better together.
