@@ -11,6 +11,28 @@ Check [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) for recommendatio
 
 ---
 
+
+## [0.0.4] - 2025-05-13
+
+### Added
+
+ - New quick fix: Add descriptive alt text with a guided prompt to encourage WCAG-compliant alt text (e.g., "Company logo").
+ - Quick fix: Add translation placeholder for Vue, Svelte, and Astro files (e.g., {{ t('image.alt') }}) to support multilingual projects.
+ - Diagnostic warning for poor alt text (e.g., filenames or "image") to promote accessibility best practices.
+ - SEO keywords in package.json to improve discoverability.
+
+ ### Changed
+
+- Removed non-compliant quick fixes (Add alt="filename.png", Add alt="filename", Add alt="filename image") based on community feedback.
+- Updated README.md to include accessibility guidelines and clarify complementary use with linters like ESLint.
+- Revised extension description and command title to emphasize WCAG compliance.
+
+### Fixed
+
+- Ensured compatibility with existing fixes for Astro and Svelte language ID recognition and duplicate alt attribute prevention.
+
+---
+
 ## [0.0.3] - 2025-05-13
 
 ### Changed
