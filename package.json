@@ -27,7 +27,8 @@
     "onLanguage:vue",
     "onLanguage:svelte",
     "onLanguage:astro",
-    "onCommand:altTextFixer.scanFile"
+    "onCommand:altTextFixer.scanFile",
+    "onStartupFinished"
   ],
   "main": "./extension.js",
   "contributes": {
