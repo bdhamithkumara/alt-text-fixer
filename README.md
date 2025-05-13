@@ -29,7 +29,7 @@ Detects missing or empty alt attributes in image tags across HTML, React, Next.j
 ### 🖥️ Step 1: Run the Extension  
 Open your file and run `Alt Text Fixer: Scan File` from the Command Palette.
 
-![Run Extension](https://i.ibb.co/21X8XhC/1.gif)
+![Run Extension](https://i.ibb.co/21X8XhHC/1.gif)
 
 ---
 
