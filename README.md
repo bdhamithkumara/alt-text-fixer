@@ -6,11 +6,7 @@ Detects missing or empty alt attributes in image tags across HTML, React, Next.j
 
 - Scans `<img>`, `<Image>`, and `<v-img>` tags.
 - Highlights issues with a bulb icon.
-- Quick fixes:
-  - Add alt with filename (e.g., `alt="logo.png"`)
-  - Add alt with filename without extension (e.g., `alt="logo"`)
-  - Add alt with filename + "image" (e.g., `alt="logo image"`)
-  - Add custom alt text.
+- Add custom alt text.
 - Supports `.html`, `.jsx`, `.tsx`, `.vue`, `.svelte`, `.astro`.
 
 ## 📦 Requirements
@@ -35,23 +31,11 @@ Open your file and run `Alt Text Fixer: Scan File` from the Command Palette.
 
 ### 💡 Step 2 - Choose a Quick Fix Option
 
-When a missing or empty `alt` attribute is detected, a bulb icon will appear in the gutter. Click the bulb or press `Ctrl+.` to see available options.
+When a missing or empty `alt` attribute is detected, a bulb icon will appear in the gutter. Click the bulb or press `Ctrl+.` to see available option.
 
-- **Option 1** - Add `alt` with filename and extension
+- Add a custom alt text of your choice  
 
-  ![Option 1](https://i.ibb.co/YT7XHGdV/oprion1.gif)
-
-- **Option 2** - Add `alt` with filename only  
-
-  ![Option 2](https://i.ibb.co/jkQCPYhY/option2.gif)
-
-- **Option 3** - Add `alt` with filename + "image"  
-
-  ![Option 3](https://i.ibb.co/mV0qh9Hv/option3.gif)
-
-- **Option 4** - Add a custom alt text of your choice  
-
-  ![Option 4](https://i.ibb.co/bj9DxJgs/option4.gif)
+  ![Option](https://i.ibb.co/bj9DxJgs/option4.gif)
 
 ---
 

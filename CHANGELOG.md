@@ -11,6 +11,16 @@ Check [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) for recommendatio
 
 ---
 
+
+## [0.0.4] - 2025-05-14
+
+### Fixed
+
+- Corrected diagnostic assignment for empty alt attributes in HTML, ensuring errors appear on the correct line (e.g., <img src="logo.png" alt="">).
+- Improved line number tracking for HTML files by resetting line counts at tag start using onopentagname handler.
+
+---
+
 ## [0.0.3] - 2025-05-13
 
 ### Changed

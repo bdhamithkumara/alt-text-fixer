@@ -2,7 +2,7 @@
   "name": "alt-text-fixer",
   "displayName": "Alt Text Fixer",
   "description": "Detects missing or empty alt attributes in image tags across HTML and frontend frameworks (React, Next.js, Vue, Angular, Svelte, Astro, etc.).",
-  "version": "0.0.2",
+  "version": "0.0.4",
   "publisher": "bdhamithkumara",
   "icon": "media/icon.png",
   "author": {
@@ -27,7 +27,8 @@
     "onLanguage:vue",
     "onLanguage:svelte",
     "onLanguage:astro",
-    "onCommand:altTextFixer.scanFile"
+    "onCommand:altTextFixer.scanFile",
+    "onStartupFinished"
   ],
   "main": "./extension.js",
   "contributes": {

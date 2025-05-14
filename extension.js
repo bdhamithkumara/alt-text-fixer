@@ -131,6 +131,7 @@ function parseVueTemplate(text) {
 }
 
 // Find missing or empty alt attributes/props
+// Find missing or empty alt attributes/props
 function findMissingAltAttributes(text, document, languageId) {
     const issues = [];
     let lineNumber = 0;
@@ -149,6 +150,7 @@ function findMissingAltAttributes(text, document, languageId) {
     const parser = new htmlparser2.Parser({
         onopentag(name, attribs) {
             const tagName = name.toLowerCase();
+            // Only check for alt attributes on supported image tags
             if (supportedTags.includes(tagName)) {
                 const altValue = attribs.alt;
                 let src = attribs.src || attribs[':src'] || ''; // Handle Vue's :src
@@ -158,6 +160,7 @@ function findMissingAltAttributes(text, document, languageId) {
                 const fileName = src.split('/').pop()?.split('?')[0] || 'image';
                 const baseName = fileName.split('.')[0]; // Filename without extension
 
+                // Check for missing or empty alt attributes
                 if (altValue === undefined) {
                     issues.push({
                         line: lineNumber,
@@ -198,6 +201,7 @@ function findMissingAltAttributes(text, document, languageId) {
     console.log(`Alt Text Fixer: Found ${issues.length} issues in ${document.fileName}`);
     return issues;
 }
+
 
 // Show diagnostics and bulb decorations
 function showIssues(issues, document, editor, ctx) {
@@ -274,32 +278,6 @@ class AltTextCodeActionProvider {
         for (const issue of issues) {
             if (document.lineAt(issue.line).range.intersection(range)) {
                 console.log(`Alt Text Fixer: Providing code action for issue at line ${issue.line}`);
-                // Helper function to create a quick fix
-                const createFix = (altText, title) => {
-                    const fix = new vscode.CodeAction(title, vscode.CodeActionKind.QuickFix);
-                    fix.edit = new vscode.WorkspaceEdit();
-                    const lineText = document.lineAt(issue.line).text;
-                    const newText = replaceAltAttribute(lineText, issue.tagName, altText, issue.isJSX);
-                    console.log(`Alt Text Fixer: Replacing line ${issue.line}: ${lineText} -> ${newText}`);
-                    fix.edit.replace(
-                        document.uri,
-                        new vscode.Range(issue.line, 0, issue.line, Number.MAX_VALUE),
-                        newText
-                    );
-                    fix.diagnostics = [diagnostics.find(d => d.range.start.line === issue.line)];
-                    fix.isPreferred = title.includes('filename with extension');
-                    return fix;
-                };
-
-                // filename with extension (e.g., logo.png)
-                actions.push(createFix(issue.fileName, `Add alt="${issue.fileName}" `));
-
-                //  filename without extension (e.g., logo)
-                actions.push(createFix(issue.baseName, `Add alt="${issue.baseName}" `));
-
-                // filename without extension + "image" (e.g., logo image)
-                actions.push(createFix(`${issue.baseName} image`, `Add alt="${issue.baseName} image"`));
-
                 //  for custom alt text
                 const customFix = new vscode.CodeAction(
                     'Add custom alt text',
@@ -330,3 +308,4 @@ module.exports = {
     activate,
     deactivate
 };
+
