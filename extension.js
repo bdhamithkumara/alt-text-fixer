@@ -12,174 +12,293 @@ let diagnosticCollection;
 /**
  * @param {vscode.ExtensionContext} context
  */
-function activate(context) {
-    let disposable = vscode.commands.registerCommand('altTextFixer.scanFile', async function () {
+function activate(ctx) {
+    console.log('Alt Text Fixer: Extension activated');
+
+    // Create a diagnostic collection
+    diagnosticCollection = vscode.languages.createDiagnosticCollection('altTextFixer');
+    ctx.subscriptions.push(diagnosticCollection);
+
+    // Register the scan command
+    const scanCommand = vscode.commands.registerCommand('altTextFixer.scanFile', async () => {
+        console.log('Alt Text Fixer: Scan File command executed');
         const editor = vscode.window.activeTextEditor;
         if (!editor) {
-            vscode.window.showInformationMessage('No active editor found.');
+            vscode.window.showErrorMessage('No active editor found.');
             return;
         }
 
         const document = editor.document;
-        const languageId = document.languageId.toLowerCase().trim();
-        console.log(`Alt Text Fixer: Document languageId (raw): "${document.languageId}"`);
-        console.log(`Alt Text Fixer: Document languageId (normalized): "${languageId}"`);
-
-        const supportedLanguages = ['html', 'javascriptreact', 'typescriptreact', 'vue', 'svelte', 'astro'];
-        if (!supportedLanguages.includes(languageId)) {
+        const supportedLanguages = ['html', 'javascript', 'javascriptreact', 'typescriptreact', 'vue', 'svelte', 'astro'];
+        console.log(`Alt Text Fixer: Document languageId: ${document.languageId}`);
+        if (!supportedLanguages.includes(document.languageId)) {
             vscode.window.showWarningMessage('This command only works for HTML, JSX, TSX, Vue, Svelte, or Astro files.');
             return;
         }
 
+        // Clear previous diagnostics
+        diagnosticCollection.clear();
+
+        // Parse the content
         const text = document.getText();
-        const diagnostics = [];
-        const supportedTags = vscode.workspace.getConfiguration('altTextFixer').get('supportedTags', ['img', 'Image', 'v-img']);
+        const issues = findMissingAltAttributes(text, document, document.languageId);
 
-        let currentLine = 0;
-        let currentTag = null;
-        let attributes = {};
-
-        const parser = new parse.Parser({
-            onopentag(name, attribs) {
-                if (supportedTags.includes(name)) {
-                    currentTag = name;
-                    attributes = attribs;
-                }
-            },
-            onclosetag() {
-                if (currentTag) {
-                    if (!attributes.alt) {
-                        diagnostics.push({
-                            message: `Missing alt attribute for ${currentTag} tag`,
-                            range: new vscode.Range(currentLine, 0, currentLine, document.lineAt(currentLine).text.length),
-                            severity: vscode.DiagnosticSeverity.Error,
-                            source: 'Alt Text Fixer',
-                            code: 'missing-alt'
-                        });
-                    } else if (attributes.alt.trim() === '') {
-                        diagnostics.push({
-                            message: `Empty alt attribute for ${currentTag} tag`,
-                            range: new vscode.Range(currentLine, 0, currentLine, document.lineAt(currentLine).text.length),
-                            severity: vscode.DiagnosticSeverity.Warning,
-                            source: 'Alt Text Fixer',
-                            code: 'empty-alt'
-                        });
-                    } else if (attributes.alt.match(/(\.png|\.jpg|\.jpeg|\.gif|\.svg|image)$/i)) {
-                        diagnostics.push({
-                            message: `Poor alt text: "${attributes.alt}" may not describe the image's purpose (avoid filenames or "image")`,
-                            range: new vscode.Range(currentLine, 0, currentLine, document.lineAt(currentLine).text.length),
-                            severity: vscode.DiagnosticSeverity.Warning,
-                            source: 'Alt Text Fixer',
-                            code: 'poor-alt'
-                        });
-                    }
-                    currentTag = null;
-                    attributes = {};
-                }
-            },
-            ontext(text) {
-                currentLine += text.split('\n').length - 1;
-            }
-        });
-        parser.write(text);
-        parser.end();
-
-        const diagnosticCollection = vscode.languages.createDiagnosticCollection('altTextFixer');
-        diagnosticCollection.set(document.uri, diagnostics);
-        console.log(`Alt Text Fixer: Found ${diagnostics.length} issues in ${document.fileName}`);
-        console.log(`Alt Text Fixer: Set ${diagnostics.length} diagnostics for ${document.fileName}`);
+        // Show diagnostics and decorations
+        showIssues(issues, document, editor, ctx);
     });
 
-    context.subscriptions.push(disposable);
+    ctx.subscriptions.push(scanCommand);
 
-    context.subscriptions.push(vscode.languages.registerCodeActionsProvider(
-        ['html', 'javascriptreact', 'typescriptreact', 'vue', 'svelte', 'astro'],
-        {
-            provideCodeActions(document, range, context) {
-                const diagnostics = context.diagnostics.filter(d => d.source === 'Alt Text Fixer');
-                if (!diagnostics.some(d => d.range.contains(range))) {
-                    return [];
+    // Register code actions provider
+    ctx.subscriptions.push(
+        vscode.languages.registerCodeActionsProvider(
+            ['html', 'javascript', 'javascriptreact', 'typescriptreact', 'vue', 'svelte', 'astro'],
+            new AltTextCodeActionProvider(),
+            { providedCodeActionKinds: [vscode.CodeActionKind.QuickFix] }
+        )
+    );
+
+    // Update diagnostics on document change
+    ctx.subscriptions.push(
+        vscode.workspace.onDidChangeTextDocument(event => {
+            if (vscode.window.activeTextEditor?.document === event.document) {
+                updateDiagnostics(event.document, diagnosticCollection);
+            }
+        })
+    );
+
+    // Register command for prompting custom alt text
+    ctx.subscriptions.push(
+        vscode.commands.registerCommand('altTextFixer.promptForAltText', async (document, line, tagName, useJSXSyntax) => {
+            console.log('Alt Text Fixer: Prompt for alt text command executed');
+            const altText = await vscode.window.showInputBox({
+                prompt: `Enter alt text for the ${tagName} tag`,
+                placeHolder: 'e.g., Company logo'
+            });
+
+            if (altText) {
+                const edit = new vscode.WorkspaceEdit();
+                const lineText = document.lineAt(line).text;
+                let newText = replaceAltAttribute(lineText, tagName, altText, useJSXSyntax);
+                console.log(`Alt Text Fixer: Replacing line ${line}: ${lineText} -> ${newText}`);
+                edit.replace(
+                    document.uri,
+                    new vscode.Range(line, 0, line, Number.MAX_VALUE),
+                    newText
+                );
+                await vscode.workspace.applyEdit(edit);
+                // Update diagnostics after fix
+                updateDiagnostics(document, diagnosticCollection);
+            }
+        })
+    );
+}
+
+// Helper function to replace or add alt attribute
+function replaceAltAttribute(lineText, tagName, altText, useJSXSyntax) {
+    // Step 1: Remove any existing alt attribute
+    const altRegex = /\s+alt\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]*)/i;
+    let cleanedText = lineText.replace(altRegex, '').trim();
+    console.log(`Alt Text Fixer: Cleaned text after removing alt: ${cleanedText}`);
+
+    // Step 2: Match the tag and insert new alt attribute
+    const tagRegex = new RegExp(`<${tagName}\\s+([^>]*?)(/?)>`, 'i');
+    const match = cleanedText.match(tagRegex);
+    let newText;
+    if (match) {
+        const attributes = match[1].trim();
+        newText = `<${tagName} ${attributes} alt="${altText}"${useJSXSyntax ? ' /' : ''}>`;
+        newText = newText.replace(/\s+/g, ' ').trim(); // Normalize spaces
+    } else {
+        // Fallback: Manual insertion
+        newText = lineText.replace(
+            new RegExp(`<${tagName}\\s*([^>]*?)(/?)>`, 'i'),
+            `<${tagName} $1 alt="${altText}"${useJSXSyntax ? ' /' : ''}>`
+        );
+    }
+    return newText;
+}
+
+// Parse Vue template from .vue file
+function parseVueTemplate(text) {
+    try {
+        const compiled = vueTemplateCompiler.parseComponent(text);
+        return compiled.template ? compiled.template.content : '';
+    } catch (error) {
+        console.error('Alt Text Fixer: Error parsing Vue template:', error);
+        return '';
+    }
+}
+
+// Find missing or empty alt attributes/props
+function findMissingAltAttributes(text, document, languageId) {
+    const issues = [];
+    let lineNumber = 0;
+    const isJSX = languageId === 'javascript' || languageId === 'javascriptreact' || languageId === 'typescriptreact';
+    const isVue = languageId === 'vue';
+    const isSvelte = languageId === 'svelte';
+    const isAstro = languageId === 'astro';
+
+    // Get supported tags from configuration
+    const config = vscode.workspace.getConfiguration('altTextFixer');
+    const supportedTags = config.get('supportedTags', ['img', 'Image', 'v-img']).map(tag => tag.toLowerCase());
+
+    // Parse Vue template if .vue file
+    const contentToParse = isVue ? parseVueTemplate(text) : text;
+
+    const parser = new htmlparser2.Parser({
+        onopentag(name, attribs) {
+            const tagName = name.toLowerCase();
+            if (supportedTags.includes(tagName)) {
+                const altValue = attribs.alt;
+                let src = attribs.src || attribs[':src'] || ''; // Handle Vue's :src
+                if ((isJSX || isVue) && src.startsWith('{')) {
+                    src = ''; // Skip dynamic src props
                 }
+                const fileName = src.split('/').pop()?.split('?')[0] || 'image';
+                const baseName = fileName.split('.')[0]; // Filename without extension
 
-                const actions = [];
-                const line = document.lineAt(range.start.line);
-                const lineText = line.text.trim();
-                const tagMatch = lineText.match(/<(\w+)/);
-                const tagName = tagMatch ? tagMatch[1] : 'img';
-                const useJSXSyntax = ['javascriptreact', 'typescriptreact'].includes(document.languageId.toLowerCase().trim());
-                const isTranslationSupported = ['vue', 'svelte', 'astro'].includes(document.languageId.toLowerCase().trim());
-
-                if (diagnostics.some(d => d.code === 'missing-alt' || d.code === 'empty-alt' || d.code === 'poor-alt')) {
-                    actions.push({
-                        title: `Add descriptive alt text`,
-                        command: 'altTextFixer.applyCustomFix',
-                        arguments: [document, range, tagName, useJSXSyntax]
+                if (altValue === undefined) {
+                    issues.push({
+                        line: lineNumber,
+                        message: `Missing alt ${isJSX ? 'prop' : 'attribute'} for ${tagName} tag.`,
+                        severity: vscode.DiagnosticSeverity.Error,
+                        src: src,
+                        fileName: fileName,
+                        baseName: baseName,
+                        tagName: tagName,
+                        isJSX: isJSX || isVue || isSvelte || isAstro
                     });
-                    if (isTranslationSupported) {
-                        actions.push({
-                            title: `Add translation placeholder`,
-                            command: 'altTextFixer.applyFix',
-                            arguments: [document, range, `{{ t('image.alt') }}`, tagName, useJSXSyntax]
-                        });
-                    }
+                } else if (altValue.trim() === '' || (isJSX && altValue === '{}')) {
+                    issues.push({
+                        line: lineNumber,
+                        message: `Empty alt ${isJSX ? 'prop' : 'attribute'} for ${tagName} tag.`,
+                        severity: vscode.DiagnosticSeverity.Warning,
+                        src: src,
+                        fileName: fileName,
+                        baseName: baseName,
+                        tagName: tagName,
+                        isJSX: isJSX || isVue || isSvelte || isAstro
+                    });
                 }
-
-                return actions;
             }
         },
-        {
-            providedCodeActionKinds: [vscode.CodeActionKind.QuickFix]
+        ontext(text) {
+            lineNumber += text.split('\n').length - 1;
         }
-    ));
+    }, { xmlMode: isJSX || isVue || isSvelte || isAstro });
 
-    context.subscriptions.push(vscode.commands.registerCommand('altTextFixer.applyFix', async (document, range, altText, tagName, useJSXSyntax) => {
-        const edit = new vscode.WorkspaceEdit();
-        const line = document.lineAt(range.start.line);
-        const lineText = line.text;
-        const newText = replaceAltAttribute(lineText, tagName, altText, useJSXSyntax);
-        edit.replace(document.uri, line.range, newText);
-        await vscode.workspace.applyEdit(edit);
+    try {
+        parser.write(contentToParse);
+        parser.end();
+    } catch (error) {
+        console.error('Alt Text Fixer: Error parsing content:', error);
+    }
 
-        const diagnosticCollection = vscode.languages.createDiagnosticCollection('altTextFixer');
-        const diagnostics = diagnosticCollection.get(document.uri).filter(d => !d.range.isEqual(line.range));
-        diagnosticCollection.set(document.uri, diagnostics);
-        console.log(`Alt Text Fixer: Updated ${diagnostics.length} diagnostics for ${document.fileName}`);
-    }));
+    console.log(`Alt Text Fixer: Found ${issues.length} issues in ${document.fileName}`);
+    return issues;
+}
 
-    context.subscriptions.push(vscode.commands.registerCommand('altTextFixer.applyCustomFix', async (document, range, tagName, useJSXSyntax) => {
-        const altText = await vscode.window.showInputBox({
-            prompt: 'Enter descriptive alt text (e.g., "Company logo" or "Chart showing sales data")',
-            placeHolder: 'Describe the image’s purpose or content'
+// Show diagnostics and bulb decorations
+function showIssues(issues, document, editor, ctx) {
+    const diagnostics = [];
+    let decorationType;
+    try {
+        decorationType = vscode.window.createTextEditorDecorationType({
+            gutterIconPath: ctx.asAbsolutePath('media/bulb.svg'),
+            gutterIconSize: 'contain'
         });
-        if (altText) {
-            const edit = new vscode.WorkspaceEdit();
-            const line = document.lineAt(range.start.line);
-            const lineText = line.text;
-            const newText = replaceAltAttribute(lineText, tagName, altText, useJSXSyntax);
-            edit.replace(document.uri, line.range, newText);
-            await vscode.workspace.applyEdit(edit);
+    } catch (error) {
+        console.error('Alt Text Fixer: Error creating decoration type:', error);
+        return;
+    }
 
-            const diagnosticCollection = vscode.languages.createDiagnosticCollection('altTextFixer');
-            const diagnostics = diagnosticCollection.get(document.uri).filter(d => !d.range.isEqual(line.range));
-            diagnosticCollection.set(document.uri, diagnostics);
-            console.log(`Alt Text Fixer: Updated ${diagnostics.length} diagnostics for ${document.fileName}`);
+    const decorations = [];
+
+    for (const issue of issues) {
+        const range = new vscode.Range(issue.line, 0, issue.line, Number.MAX_VALUE);
+        const diagnostic = new vscode.Diagnostic(
+            range,
+            issue.message,
+            issue.severity
+        );
+        diagnostic.code = 'alt-text-fixer';
+        diagnostic.source = 'Alt Text Fixer';
+        diagnostics.push(diagnostic);
+
+        decorations.push({ range });
+    }
+
+    diagnosticCollection.set(document.uri, diagnostics);
+    editor.setDecorations(decorationType, decorations);
+    console.log(`Alt Text Fixer: Set ${diagnostics.length} diagnostics for ${document.fileName}`);
+}
+
+// Update diagnostics on document change
+function updateDiagnostics(document, diagnosticCollection) {
+    const supportedLanguages = ['html', 'javascript', 'javascriptreact', 'typescriptreact', 'vue', 'svelte', 'astro'];
+    if (!supportedLanguages.includes(document.languageId)) return;
+
+    const text = document.getText();
+    const issues = findMissingAltAttributes(text, document, document.languageId);
+    const diagnostics = issues.map(issue => {
+        const diagnostic = new vscode.Diagnostic(
+            new vscode.Range(issue.line, 0, issue.line, Number.MAX_VALUE),
+            issue.message,
+            issue.severity
+        );
+        diagnostic.code = 'alt-text-fixer';
+        diagnostic.source = 'Alt Text Fixer';
+        return diagnostic;
+    });
+
+    diagnosticCollection.set(document.uri, diagnostics);
+    console.log(`Alt Text Fixer: Updated ${diagnostics.length} diagnostics for ${document.fileName}`);
+}
+
+// Code action provider for quick fixes
+class AltTextCodeActionProvider {
+    provideCodeActions(document, range, context) {
+        const diagnostics = context.diagnostics.filter(d => d.code === 'alt-text-fixer' && d.source === 'Alt Text Fixer');
+        console.log(`Alt Text Fixer: Found ${diagnostics.length} relevant diagnostics for code actions`);
+        if (diagnostics.length === 0) {
+            console.log('Alt Text Fixer: No relevant diagnostics found for code actions');
+            return;
         }
-    }));
+
+        const actions = [];
+        const text = document.getText();
+        const languageId = document.languageId;
+        const issues = findMissingAltAttributes(text, document, languageId);
+
+        for (const issue of issues) {
+            if (document.lineAt(issue.line).range.intersection(range)) {
+                console.log(`Alt Text Fixer: Providing code action for issue at line ${issue.line}`);
+                //  for custom alt text
+                const customFix = new vscode.CodeAction(
+                    'Add custom alt text',
+                    vscode.CodeActionKind.QuickFix
+                );
+                customFix.command = {
+                    command: 'altTextFixer.promptForAltText',
+                    title: 'Prompt for custom alt text',
+                    arguments: [document, issue.line, issue.tagName, issue.isJSX]
+                };
+                customFix.diagnostics = [diagnostics.find(d => d.range.start.line === issue.line)];
+                actions.push(customFix);
+            }
+        }
+
+        console.log(`Alt Text Fixer: Returning ${actions.length} code actions`);
+        return actions;
+    }
 }
 
-function replaceAltAttribute(lineText, tagName, altText, useJSXSyntax) {
-    let match = lineText.match(new RegExp(`<${tagName}\\s+([^>]*?)(/?)>`, 'i'));
-    if (!match) return lineText;
-    let attributes = match[1];
-    let attrArray = attributes.split(/\s+/).filter(attr => !attr.toLowerCase().startsWith('alt='));
-    let newAttributes = attrArray.join(' ').trim();
-    let newText = `<${tagName} ${newAttributes} alt="${altText}"${useJSXSyntax ? ' /' : ''}>`;
-    console.log(`Alt Text Fixer: Cleaned text after removing alt: <${tagName} ${newAttributes}${useJSXSyntax ? ' /' : ''}>`);
-    console.log(`Alt Text Fixer: Replacing line ${lineText} -> ${newText}`);
-    return newText.replace(/\s+/g, ' ').trim();
+function deactivate() {
+    if (diagnosticCollection) {
+        diagnosticCollection.clear();
+    }
 }
-
-function deactivate() {}
 
 module.exports = {
     activate,
