@@ -6,11 +6,7 @@ Detects missing or empty alt attributes in image tags across HTML, React, Next.j
 
 - Scans `<img>`, `<Image>`, and `<v-img>` tags.
 - Highlights issues with a bulb icon.
-- Quick fixes:
-  - Add alt with filename (e.g., `alt="logo.png"`)
-  - Add alt with filename without extension (e.g., `alt="logo"`)
-  - Add alt with filename + "image" (e.g., `alt="logo image"`)
-  - Add custom alt text.
+- Add custom alt text.
 - Supports `.html`, `.jsx`, `.tsx`, `.vue`, `.svelte`, `.astro`.
 
 ## 📦 Requirements
