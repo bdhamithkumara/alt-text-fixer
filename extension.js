@@ -131,6 +131,7 @@ function parseVueTemplate(text) {
 }
 
 // Find missing or empty alt attributes/props
+// Find missing or empty alt attributes/props
 function findMissingAltAttributes(text, document, languageId) {
     const issues = [];
     let lineNumber = 0;
@@ -149,6 +150,7 @@ function findMissingAltAttributes(text, document, languageId) {
     const parser = new htmlparser2.Parser({
         onopentag(name, attribs) {
             const tagName = name.toLowerCase();
+            // Only check for alt attributes on supported image tags
             if (supportedTags.includes(tagName)) {
                 const altValue = attribs.alt;
                 let src = attribs.src || attribs[':src'] || ''; // Handle Vue's :src
@@ -158,6 +160,7 @@ function findMissingAltAttributes(text, document, languageId) {
                 const fileName = src.split('/').pop()?.split('?')[0] || 'image';
                 const baseName = fileName.split('.')[0]; // Filename without extension
 
+                // Check for missing or empty alt attributes
                 if (altValue === undefined) {
                     issues.push({
                         line: lineNumber,
@@ -198,6 +201,7 @@ function findMissingAltAttributes(text, document, languageId) {
     console.log(`Alt Text Fixer: Found ${issues.length} issues in ${document.fileName}`);
     return issues;
 }
+
 
 // Show diagnostics and bulb decorations
 function showIssues(issues, document, editor, ctx) {
@@ -304,3 +308,4 @@ module.exports = {
     activate,
     deactivate
 };
+
